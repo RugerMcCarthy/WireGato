@@ -3,6 +3,7 @@ package edu.bupt.jetcapture
 import android.content.Intent
 import android.net.VpnService
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
@@ -31,6 +32,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Button(onClick = {
                         prepareStartVPN()
+                        // Log.d("gzz", "click over")
                     }) {
                         Text("Start VPN")
                     }

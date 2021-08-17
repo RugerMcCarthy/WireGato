@@ -9,6 +9,7 @@ import edu.bupt.jetcapture.vpn.tunnel.TcpRemoteProxyTunnel
 import edu.bupt.jetcapture.vpn.tunnel.TcpTunnelBridge
 import edu.bupt.jetcapture.vpn.tunnel.TunnelCallBack
 import java.io.IOException
+import java.lang.Exception
 import java.net.InetSocketAddress
 import java.nio.channels.SelectionKey
 import java.nio.channels.Selector
@@ -20,7 +21,7 @@ class TcpProxyServer(
     ip: String,
     mtu: Int,
     sessionProvider: SessionProvider
-): Thread() {
+): Thread("TCP_Thread") {
     private var mSessionProvider: SessionProvider = sessionProvider
     private var mVpnService: VpnService = vpnService
     val bindIp = NetBareUtils.convertIp(ip)
@@ -40,8 +41,14 @@ class TcpProxyServer(
     override fun run() {
         super.run()
         while (mIsRunning) {
-            process()
+            try {
+                process()
+            } catch (e: Exception) {
+                Log.e("gzz", Log.getStackTraceString(e))
+            }
         }
+        mSelector.close()
+        mServerSocketChannel.close()
     }
 
     private fun process() {
@@ -69,6 +76,7 @@ class TcpProxyServer(
                                     callback.onWrite()
                                 }
                             } catch (e: IOException) {
+                                Log.e("gzz", Log.getStackTraceString(e))
                                 callback.onClosed()
                             }
                         }
@@ -99,7 +107,13 @@ class TcpProxyServer(
             session,
             mMtu,
         )
-        tunnelBridge.connect(InetSocketAddress(NetBareUtils.convertIp(remoteIP), remotePort.toInt()))
+        try {
+            tunnelBridge.connect(InetSocketAddress(NetBareUtils.convertIp(remoteIP), remotePort.toInt()))
+        } catch (e: Exception) {
+            localProxyTunnel.close()
+            remoteProxyTunnel.close()
+            throw e
+        }
     }
 
     fun startServer() {

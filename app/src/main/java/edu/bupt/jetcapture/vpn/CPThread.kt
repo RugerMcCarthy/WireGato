@@ -7,7 +7,7 @@ import edu.bupt.jetcapture.bean.vpn.CPVpnConfig
 import java.io.FileInputStream
 import java.io.FileOutputStream
 
-class CPThread(val vpnService: VpnService, val config: CPVpnConfig): Thread() {
+class CPThread(val vpnService: VpnService, val config: CPVpnConfig): Thread("CPThread") {
 
     private var packageTransfer: PackageTransfer = PackageTransfer(vpnService, config)
 
@@ -36,8 +36,12 @@ class CPThread(val vpnService: VpnService, val config: CPVpnConfig): Thread() {
         var input = FileInputStream(vpnDescriptor.fileDescriptor)
         var output = FileOutputStream(vpnDescriptor.fileDescriptor)
         packageTransfer.prepare()
-        while (mRunning) {
-            packageTransfer.transfer(input, output, config.mtu)
+        try {
+            while (mRunning) {
+                packageTransfer.transfer(input, output, config.mtu)
+            }
+        } catch (e: Exception) {
+            Log.e("gzz", "Transfer Over "  + Log.getStackTraceString(e))
         }
     }
 

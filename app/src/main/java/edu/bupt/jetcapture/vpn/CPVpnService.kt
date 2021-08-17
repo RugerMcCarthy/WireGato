@@ -10,6 +10,7 @@ class CPVpnService: VpnService() {
         const val ACTION_STOP = "edu.bupt.jetcapture.action.Stop"
     }
 
+    var isRunning = false
     lateinit var capturePackageThread: CPThread
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -18,10 +19,14 @@ class CPVpnService: VpnService() {
         }
         when (intent.action) {
             ACTION_START -> {
-                prepareCapture()
+                if (!isRunning) {
+                    prepareCapture()
+                    isRunning = true
+                }
             }
             ACTION_STOP -> {
                 stopSelf()
+                isRunning = false
             }
         }
 

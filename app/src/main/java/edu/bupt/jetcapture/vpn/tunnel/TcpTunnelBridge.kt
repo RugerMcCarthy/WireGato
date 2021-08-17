@@ -34,12 +34,14 @@ class TcpTunnelBridge(
                     throw Throwable("LocalProxyTunnel is Closed!")
                 }
                 val buffer = ByteBuffer.allocate(mMtu)
-                val len: Int = try {
-                    mLocalProxyTunnel.read(buffer)
+                var len = -1
+                try {
+                    len = mLocalProxyTunnel.read(buffer)
                 } catch (e: IOException) {
-                    throw Throwable(e.message)
+                    throw e
                 }
                 if (len < 0 || mRemoteProxyTunnel.isClosed()) {
+                    mLocalProxyTunnel.close()
                     mGateway.onResponseFinished()
                     return
                     //throw Throwable("RemoteProxyTunnel is Closed!")
@@ -52,6 +54,7 @@ class TcpTunnelBridge(
             }
 
             override fun onClosed() {
+                mGateway.close()
             }
         })
 
@@ -67,12 +70,14 @@ class TcpTunnelBridge(
                     throw Throwable("RemoteProxyTunnel is Closed!")
                 }
                 val buffer = ByteBuffer.allocate(mMtu)
-                var len = try {
-                    mRemoteProxyTunnel.read(buffer)
+                var len = -1
+                try {
+                    len = mRemoteProxyTunnel.read(buffer)
                 } catch (e: IOException) {
-                    throw Throwable(e.message)
+                    throw e
                 }
                 if (len < 0 || mLocalProxyTunnel.isClosed()) {
+                    mRemoteProxyTunnel.close()
                     mGateway.onRequestFinished()
                     return
                     // throw Throwable("LocalProxyTunnel is Closed!")
@@ -85,6 +90,7 @@ class TcpTunnelBridge(
             }
 
             override fun onClosed() {
+                mGateway.close()
             }
         })
     }

@@ -109,4 +109,9 @@ class TcpRemoteProxyTunnel(
             mSelectionKey!!.interestOps(SelectionKey.OP_READ)
         }
     }
+
+    override fun close() {
+        super.close()
+        mSocketChannel.close()
+    }
 }
