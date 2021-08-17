@@ -3,18 +3,25 @@ package edu.bupt.jetcapture.vpn.server
 import android.net.VpnService
 import android.util.Log
 import edu.bupt.jetcapture.utils.NetBareUtils
-import kotlinx.coroutines.processNextEventInCurrentThread
+import edu.bupt.jetcapture.vpn.SessionProvider
+import edu.bupt.jetcapture.vpn.tunnel.TcpLocalProxyTunnel
+import edu.bupt.jetcapture.vpn.tunnel.TcpRemoteProxyTunnel
+import edu.bupt.jetcapture.vpn.tunnel.TcpTunnelBridge
+import edu.bupt.jetcapture.vpn.tunnel.TunnelCallBack
 import java.io.IOException
 import java.net.InetSocketAddress
 import java.nio.channels.SelectionKey
 import java.nio.channels.Selector
 import java.nio.channels.ServerSocketChannel
+import java.nio.channels.SocketChannel
 
 class TcpProxyServer(
     vpnService: VpnService,
     ip: String,
-    mtu: Int
+    mtu: Int,
+    sessionProvider: SessionProvider
 ): Thread() {
+    private var mSessionProvider: SessionProvider = sessionProvider
     private var mVpnService: VpnService = vpnService
     val bindIp = NetBareUtils.convertIp(ip)
     val bindPort
@@ -35,8 +42,6 @@ class TcpProxyServer(
         while (mIsRunning) {
             process()
         }
-        Log.d("gzz", "test end")
-
     }
 
     private fun process() {
@@ -53,7 +58,20 @@ class TcpProxyServer(
                     if (key.isAcceptable) {
                         onAccept()
                     } else {
-
+                        var callback = key.attachment()
+                        if (callback is TunnelCallBack) {
+                            try {
+                                if (key.isConnectable) {
+                                    callback.onConnected()
+                                } else if (key.isReadable) {
+                                    callback.onRead()
+                                } else if (key.isWritable) {
+                                    callback.onWrite()
+                                }
+                            } catch (e: IOException) {
+                                callback.onClosed()
+                            }
+                        }
                     }
                 }
             } finally {
@@ -63,7 +81,26 @@ class TcpProxyServer(
     }
 
     private fun onAccept() {
-
+        var clientSocketChannel = mServerSocketChannel.accept()
+        var clientSocket = clientSocketChannel.socket()
+        var localPort = clientSocket.port
+        var session = mSessionProvider.query(localPort.toShort())
+        if (session == null) {
+            Log.e("gzz", "Session Not Found")
+            return
+        }
+        var remotePort = session.remotePort
+        var remoteIP = session.remoteIp
+        var localProxyTunnel = TcpLocalProxyTunnel(clientSocketChannel, mSelector)
+        var remoteProxyTunnel = TcpRemoteProxyTunnel(mVpnService, SocketChannel.open(), mSelector)
+        var tunnelBridge = TcpTunnelBridge(
+            localProxyTunnel,
+            remoteProxyTunnel,
+            session,
+            mMtu,
+        )
+        Log.d("gzz", "connect remote: ${NetBareUtils.convertIp(remoteIP)}:${remotePort.toInt()}")
+        tunnelBridge.connect(InetSocketAddress(NetBareUtils.convertIp(remoteIP), remotePort.toInt()))
     }
 
     fun startServer() {

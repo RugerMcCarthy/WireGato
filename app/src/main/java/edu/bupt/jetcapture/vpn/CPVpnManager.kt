@@ -23,9 +23,9 @@ object CPVpnManager {
         try {
             config.checkValid()
             mConfig = config
-            var vpnStartIntent = Intent(CPVpnService.ACTION_START)
-            vpnStartIntent.`package` = mApp.packageName
-            ContextCompat.startForegroundService(mApp, vpnStartIntent)
+            var intent = Intent(CPVpnService.ACTION_START)
+            intent.`package` = mApp.packageName
+            ContextCompat.startForegroundService(mApp, intent)
         } catch (e: Exception) {
             Log.d("gzz", Log.getStackTraceString(e))
         }

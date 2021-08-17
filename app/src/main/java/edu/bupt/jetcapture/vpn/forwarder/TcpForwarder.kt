@@ -17,7 +17,7 @@ class TcpProxyForwarder(
     val mtu: Int
 ): ProtocolForwarder {
     var mSessionProvider = SessionProvider()
-    var mTcpProxyServer = TcpProxyServer(vpnService, ip, mtu)
+    var mTcpProxyServer = TcpProxyServer(vpnService, ip, mtu, mSessionProvider)
 
     override fun prepare() {
         mTcpProxyServer.startServer()
@@ -55,18 +55,15 @@ class TcpProxyForwarder(
                 remoteIp
             )
             session.packetIndex++
-            // Forward client request to proxy server.  步骤3
-            ipHeader.sourceIp = remoteIp //源ip改为目标ip
-            ipHeader.destinationIp = mTcpProxyServer.bindIp //目标ip改为代理服务器ip
-            tcpHeader.destinationPort = mTcpProxyServer.bindPort //目标端口改为代理服务器端口
+            ipHeader.sourceIp = remoteIp
+            ipHeader.destinationIp = mTcpProxyServer.bindIp
+            tcpHeader.destinationPort = mTcpProxyServer.bindPort
             // Client requests to server
             ipHeader.updateChecksum()
             tcpHeader.updateChecksum()
             session.sendDataSize += tcpDataSize
         } else {
             Log.d("gzz", "接收: $tcpHeader")
-            // Forward proxy server response to client.
-            // Proxy server responses forward client request.
             val session: Session? = mSessionProvider.query(remotePort)
             if (session == null) {
                 Log.e("gzz","No session saved with key: $remotePort")
