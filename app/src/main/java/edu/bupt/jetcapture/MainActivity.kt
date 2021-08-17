@@ -11,13 +11,15 @@ import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import edu.bupt.jetcapture.bean.net.IpAddress
 import edu.bupt.jetcapture.bean.vpn.CPVpnConfig
 import edu.bupt.jetcapture.vpn.CPVpnManager
 import edu.bupt.jetcapture.ui.theme.JetCaptureTheme
 
 class MainActivity : ComponentActivity() {
-    val REQUEST_VPN_CODE = 1;
+    private val REQUEST_VPN_CODE = 1
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {

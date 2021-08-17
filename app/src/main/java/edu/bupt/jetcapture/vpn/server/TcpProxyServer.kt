@@ -99,7 +99,6 @@ class TcpProxyServer(
             session,
             mMtu,
         )
-        Log.d("gzz", "connect remote: ${NetBareUtils.convertIp(remoteIP)}:${remotePort.toInt()}")
         tunnelBridge.connect(InetSocketAddress(NetBareUtils.convertIp(remoteIP), remotePort.toInt()))
     }
 
