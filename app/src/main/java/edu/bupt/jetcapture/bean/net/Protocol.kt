@@ -13,8 +13,7 @@
  *  You should have received a copy of the GNU General Public License along with NetBare.
  *  If not, see <http://www.gnu.org/licenses/>.
  */
-package edu.bupt.jetcapture.bean.net;
-
+package edu.bupt.jetcapture.bean.net
 
 /**
  * The enum defines all supported IP protocols.
@@ -25,42 +24,36 @@ package edu.bupt.jetcapture.bean.net;
  * @author Megatron King
  * @since 2018-10-11 00:13
  */
-public enum Protocol {
-
+enum class Protocol(val number: Byte) {
     /**
      * Internet Control Message Protocol.
      */
-    ICMP((byte)1),
+    ICMP(1.toByte()),
 
     /**
-     * 	Transmission Control Protocol.
+     * Transmission Control Protocol.
      */
-    TCP((byte)6),
+    TCP(6.toByte()),
 
     /**
-     * 	User Datagram Protocol.
+     * User Datagram Protocol.
      */
-    UDP((byte)17);
+    UDP(17.toByte());
 
-    final byte number;
-
-    Protocol(byte number) {
-        this.number = number;
-    }
-
-    /**
-     * Parse the protocol by number.
-     *
-     * @param number Protocol number.
-     * @return The supported protocol number or null.
-     */
-    public static Protocol parse(int number) {
-        for (Protocol protocol : values()) {
-            if (protocol.number == number) {
-                return protocol;
+    companion object {
+        /**
+         * Parse the protocol by number.
+         *
+         * @param number Protocol number.
+         * @return The supported protocol number or null.
+         */
+        fun parse(number: Int): Protocol? {
+            for (protocol in values()) {
+                if (protocol.number.toInt() == number) {
+                    return protocol
+                }
             }
+            return null
         }
-        return null;
     }
-
 }

@@ -17,7 +17,7 @@ class PackageTransfer(val vpnService: VpnService, val config: CPVpnConfig) {
 
     init {
         mSupportedProtocolForwarder[Protocol.TCP] =
-            TcpProxyForwarder(vpnService, config.address.address, config.mtu)
+            TcpProxyForwarder(vpnService, config.address.address!!, config.mtu)
     }
 
     fun prepare() {

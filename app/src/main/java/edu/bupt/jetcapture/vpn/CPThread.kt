@@ -49,9 +49,9 @@ class CPThread(val vpnService: VpnService, val config: CPVpnConfig): Thread("CPT
         return with(vpnService.Builder()) {
             setSession(config.session)
             setMtu(config.mtu)
-            addAddress(config.address.address, config.address.prefixLength)
+            addAddress(config.address.address!!, config.address.prefixLength)
             config.routes.forEach {
-                addRoute(it.address, it.prefixLength)
+                addRoute(it.address!!, it.prefixLength)
             }
             establish()
         }

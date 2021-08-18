@@ -13,7 +13,7 @@
  *  You should have received a copy of the GNU General Public License along with NetBare.
  *  If not, see <http://www.gnu.org/licenses/>.
  */
-package edu.bupt.jetcapture.bean.net;
+package edu.bupt.jetcapture.bean.net
 
 /**
  * ICMP messages are sent using the basic IP header. The first octet of the data portion of the
@@ -38,54 +38,39 @@ package edu.bupt.jetcapture.bean.net;
  * @author Megatron King
  * @since 2018-10-10 23:04
  */
-public class IcmpHeader extends Header {
-
-    private static final short OFFSET_TYPE = 0;
-    private static final short OFFSET_CODE = 1;
-    private static final short OFFSET_CRC = 2;
-
-    private IpHeader mIpHeader;
-
-    public IcmpHeader(IpHeader header, byte[] packet, int offset) {
-        super(packet, offset);
-        mIpHeader = header;
-    }
-
-    public IpHeader getIpHeader() {
-        return mIpHeader;
-    }
-
-    public byte getType() {
-        return readByte(offset + OFFSET_TYPE);
-    }
-
-    public byte getCode() {
-        return readByte(offset + OFFSET_CODE);
-    }
-
-    public short getCrc() {
-        return readShort(offset + OFFSET_CRC);
-    }
-
-    public void setCrc(short crc) {
-        writeShort(crc, offset + OFFSET_CRC);
-    }
-
-    public void updateChecksum() {
-        setCrc((short) 0);
-        setCrc(computeChecksum());
-    }
-
-    private short computeChecksum() {
-        int dataLength = mIpHeader.getDataLength();
-        long sum = mIpHeader.getIpSum();
-        sum += mIpHeader.getProtocol() & 0xFF;
-        sum += dataLength;
-        sum += getSum(offset, dataLength);
-        while ((sum >> 16) > 0) {
-            sum = (sum & 0xFFFF) + (sum >> 16);
+class IcmpHeader(val ipHeader: IpHeader, packet: ByteArray?, offset: Int) : Header(
+    packet!!, offset
+) {
+    val type: Byte
+        get() = readByte(offset + OFFSET_TYPE)
+    val code: Byte
+        get() = readByte(offset + OFFSET_CODE)
+    var crc: Short
+        get() = readShort(offset + OFFSET_CRC)
+        set(crc) {
+            writeShort(crc, offset + OFFSET_CRC)
         }
-        return (short) ~sum;
+
+    fun updateChecksum() {
+        crc = 0.toShort()
+        crc = computeChecksum()
     }
 
+    private fun computeChecksum(): Short {
+        val dataLength = ipHeader.dataLength
+        var sum = ipHeader.ipSum
+        sum += (ipHeader.protocol.toInt() and 0xFF).toLong()
+        sum += dataLength.toLong()
+        sum += getSum(offset, dataLength)
+        while (sum shr 16 > 0) {
+            sum = (sum and 0xFFFF) + (sum shr 16)
+        }
+        return sum.inv().toShort()
+    }
+
+    companion object {
+        private const val OFFSET_TYPE: Short = 0
+        private const val OFFSET_CODE: Short = 1
+        private const val OFFSET_CRC: Short = 2
+    }
 }
