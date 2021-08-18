@@ -7,8 +7,8 @@ import java.nio.ByteBuffer
 
 
 class TcpTunnelBridge(
-    private val mLocalProxyTunnel: TcpLocalProxyTunnel,
-    private val mRemoteProxyTunnel: TcpRemoteProxyTunnel,
+    private val mLocalProxyTunnel: TcpTunnel,
+    private val mRemoteProxyTunnel: TcpTunnel,
     private val mSession: Session,
     private val mMtu: Int
 ) {

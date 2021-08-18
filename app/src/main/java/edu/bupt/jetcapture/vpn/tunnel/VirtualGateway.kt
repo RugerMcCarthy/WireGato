@@ -7,8 +7,8 @@ import java.nio.ByteBuffer
 
 class VirtualGateway(
     val session: Session,
-    private val localProxyTunnel: TcpLocalProxyTunnel,
-    private val remoteProxyTunnel: TcpRemoteProxyTunnel
+    private val localProxyTunnel: TcpTunnel,
+    private val remoteProxyTunnel: TcpTunnel
 ) {
 
     private var mRequestFinished = false
